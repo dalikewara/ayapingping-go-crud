@@ -7,6 +7,25 @@ import (
 
 // User
 
+type UserGetAllActiveParam struct {
+	Ctx context.Context
+}
+
+type UserGetAllActiveResult struct {
+	User  []*entity.User
+	Error entity.StdError
+}
+
+type UserGetDetailParam struct {
+	Ctx context.Context
+	ID  entity.ID
+}
+
+type UserGetDetailResult struct {
+	User  *entity.UserWithProfile
+	Error entity.StdError
+}
+
 type UserRegisterParam struct {
 	Ctx                  context.Context
 	Username             entity.Username
@@ -19,8 +38,9 @@ type UserRegisterParam struct {
 }
 
 type UserRegisterResult struct {
-	UserID entity.ID
-	Error  entity.StdError
+	ID        entity.ID
+	ProfileID entity.ID
+	Error     entity.StdError
 }
 
 type UserLoginParam struct {
@@ -31,5 +51,40 @@ type UserLoginParam struct {
 
 type UserLoginResult struct {
 	User  *entity.User
+	Error entity.StdError
+}
+
+type UserUpdateParam struct {
+	Ctx       context.Context
+	ID        entity.ID
+	Username  entity.Username
+	FirstName entity.FirstName
+	LastName  entity.LastName
+	Gender    entity.Gender
+}
+
+type UserUpdateResult struct {
+	Error entity.StdError
+}
+
+type UserDeleteParam struct {
+	Ctx      context.Context
+	ID       entity.ID
+	Password entity.Password
+}
+
+type UserDeleteResult struct {
+	Error entity.StdError
+}
+
+// Profile
+
+type ProfileUpdateImageParam struct {
+	Ctx    context.Context
+	UserID entity.ID
+	Image  entity.Image
+}
+
+type ProfileUpdateImageResult struct {
 	Error entity.StdError
 }

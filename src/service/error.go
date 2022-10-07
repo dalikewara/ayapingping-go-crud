@@ -30,6 +30,14 @@ var ErrParamLastName = entity.NewStdError("PRM-LASTNAME-01", "invalid last name 
 
 var ErrParamUsernameOrEmail = entity.NewStdError("PRM-USERNAMEOREMAIL-01", "invalid username or email format", http.StatusBadRequest)
 
+// Param: User id
+
+var ErrParamUserID = entity.NewStdError("PRM-USERID-01", "invalid user id format", http.StatusBadRequest)
+
+// Param: Gender
+
+var ErrParamGender = entity.NewStdError("PRM-GENDER-01", "invalid gender format", http.StatusBadRequest)
+
 // Service: User
 
 var ErrServiceUsernameOrEmailAlreadyExists = entity.NewStdError("SVC-USER-01", "username or email already exists", http.StatusOK)

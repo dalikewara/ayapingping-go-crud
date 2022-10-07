@@ -30,8 +30,65 @@ func NewUserPostgreSQL(param NewUserPostgreSQLParam) User {
 	}
 }
 
+// FindAllActive finds all active user from database.
+func (r *userPostgreSQL) FindAllActive(param UserFindAllActiveParam) UserFindAllActiveResult {
+	result := UserFindAllActiveResult{}
+	return result
+}
+
+// FindDetailByID finds user detail by id from database.
+func (r *userPostgreSQL) FindDetailByID(param UserFindDetailByIDParam) UserFindDetailByIDResult {
+	result := UserFindDetailByIDResult{}
+	return result
+}
+
+// FindByUsernameOrEmailAndPassword finds user data by username or email, and password from PostgreSQL database.
+func (r *userPostgreSQL) FindByUsernameOrEmailAndPassword(param UserFindByUsernameOrEmailAndPasswordParam) UserFindByUsernameOrEmailAndPasswordResult {
+	result := UserFindByUsernameOrEmailAndPasswordResult{}
+	user := &entity.User{}
+
+	createdAt := r.typeTimestamp
+	updatedAt := r.typeTimestamp
+	deletedAt := r.typeTimestamp
+
+	err := r.pool.QueryRow(param.Ctx, PostgreSQLUserFindByUsernameOrEmailAndPasswordQuery, param.UsernameOrEmail, param.UsernameOrEmail, param.Password).
+		Scan(
+			&user.ID,
+			&user.Username,
+			&user.Email,
+			&user.ActiveStatus,
+			&createdAt,
+			&updatedAt,
+			&deletedAt,
+		)
+	if err != nil {
+		if pgxpoolgo.ErrDB(err).IsNoRows() {
+			return result
+		}
+		result.Error = ErrDatabaseUserFind
+		return result
+	}
+
+	user.CreatedAt.SetFromTime(createdAt.Time, entity.Timezone{
+		Name:   r.timezoneName,
+		Offset: r.timezoneOffset,
+	})
+	user.UpdatedAt.SetFromTime(updatedAt.Time, entity.Timezone{
+		Name:   r.timezoneName,
+		Offset: r.timezoneOffset,
+	})
+	user.DeletedAt.SetFromTime(deletedAt.Time, entity.Timezone{
+		Name:   r.timezoneName,
+		Offset: r.timezoneOffset,
+	})
+
+	result.User = user
+
+	return result
+}
+
 // InsertTx inserts new user data into PostgreSQL database.
-// InsertTx will insert user and profile data using transaction.
+// It will insert user and profile data using transaction.
 func (r *userPostgreSQL) InsertTx(param UserInsertTxParam) UserInsertTxResult {
 	result := UserInsertTxResult{}
 
@@ -86,47 +143,16 @@ func (r *userPostgreSQL) InsertTx(param UserInsertTxParam) UserInsertTxResult {
 	return result
 }
 
-// FindByUsernameOrEmailAndPassword finds user data by username or email, and password from database.
-func (r *userPostgreSQL) FindByUsernameOrEmailAndPassword(param UserFindByUsernameOrEmailAndPasswordParam) UserFindByUsernameOrEmailAndPasswordResult {
-	result := UserFindByUsernameOrEmailAndPasswordResult{}
-	user := &entity.User{}
+// UpdateByIDTx updates user data by id into database.
+// It will update user and profile data using transaction.
+func (r *userPostgreSQL) UpdateByIDTx(param UserUpdateByIDTxParam) UserUpdateByIDTxResult {
+	result := UserUpdateByIDTxResult{}
+	return result
+}
 
-	createdAt := r.typeTimestamp
-	updatedAt := r.typeTimestamp
-	deletedAt := r.typeTimestamp
-
-	err := r.pool.QueryRow(param.Ctx, PostgreSQLUserFindByUsernameOrEmailAndPasswordQuery, param.UsernameOrEmail, param.UsernameOrEmail, param.Password).
-		Scan(
-			&user.ID,
-			&user.Username,
-			&user.Email,
-			&user.ActiveStatus,
-			&createdAt,
-			&updatedAt,
-			&deletedAt,
-		)
-	if err != nil {
-		if pgxpoolgo.ErrDB(err).IsNoRows() {
-			return result
-		}
-		result.Error = ErrDatabaseUserFind
-		return result
-	}
-
-	user.CreatedAt.SetFromTime(createdAt.Time, entity.Timezone{
-		Name:   r.timezoneName,
-		Offset: r.timezoneOffset,
-	})
-	user.UpdatedAt.SetFromTime(updatedAt.Time, entity.Timezone{
-		Name:   r.timezoneName,
-		Offset: r.timezoneOffset,
-	})
-	user.DeletedAt.SetFromTime(deletedAt.Time, entity.Timezone{
-		Name:   r.timezoneName,
-		Offset: r.timezoneOffset,
-	})
-
-	result.User = user
-
+// DeleteByIDTx deletes user data by id from database.
+// It will delete user and profile data using transaction.
+func (r *userPostgreSQL) DeleteByIDTx(param UserDeleteByIDTxParam) UserDeleteByIDTxResult {
+	result := UserDeleteByIDTxResult{}
 	return result
 }

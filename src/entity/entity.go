@@ -14,7 +14,7 @@ func (i *ID) Primitive() uint32 {
 	return uint32(*i)
 }
 
-func (i *ID) Validate() bool {
+func (i *ID) IsValid() bool {
 	return *i > 0
 }
 
@@ -107,6 +107,10 @@ func (f *FirstName) Validate() error {
 	return validator.ValidateName(f.Primitive())
 }
 
+func (f *FirstName) IsEmpty() bool {
+	return *f == ""
+}
+
 // LastName
 
 type LastName string
@@ -139,8 +143,12 @@ func (g *Gender) Primitive() uint8 {
 	return uint8(*g)
 }
 
+func (g *Gender) IsEmpty() bool {
+	return *g == 0
+}
+
 func (g *Gender) IsValid() bool {
-	return *g > 0
+	return *g > 0 && *g <= 2
 }
 
 func (g *Gender) IsMale() bool {

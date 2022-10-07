@@ -19,6 +19,24 @@ func NewUser(param NewUserParam) User {
 	}
 }
 
+// GetAllActive gets all active users.
+func (s *user) GetAllActive(param UserGetAllActiveParam) UserGetAllActiveResult {
+	result := UserGetAllActiveResult{}
+	return result
+}
+
+// GetDetail gets user detail.
+func (s *user) GetDetail(param UserGetDetailParam) UserGetDetailResult {
+	result := UserGetDetailResult{}
+
+	if !param.ID.IsValid() {
+		result.Error = ErrParamUserID
+		return result
+	}
+
+	return result
+}
+
 // Register registers new user data.
 func (s *user) Register(param UserRegisterParam) UserRegisterResult {
 	result := UserRegisterResult{}
@@ -39,12 +57,16 @@ func (s *user) Register(param UserRegisterParam) UserRegisterResult {
 		result.Error = ErrParamPasswordConfirmationDoesntMatch
 		return result
 	}
-	if param.FirstName.Validate() != nil {
+	if !param.FirstName.IsEmpty() && param.FirstName.Validate() != nil {
 		result.Error = ErrParamFirstName
 		return result
 	}
 	if !param.LastName.IsEmpty() && param.LastName.Validate() != nil {
 		result.Error = ErrParamLastName
+		return result
+	}
+	if !param.Gender.IsEmpty() && !param.Gender.IsValid() {
+		result.Error = ErrParamGender
 		return result
 	}
 
@@ -68,7 +90,8 @@ func (s *user) Register(param UserRegisterParam) UserRegisterResult {
 		return result
 	}
 
-	result.UserID = userInsert.ID
+	result.ID = userInsert.ID
+	result.ProfileID = userInsert.ProfileID
 
 	return result
 }
@@ -101,6 +124,50 @@ func (s *user) Login(param UserLoginParam) UserLoginResult {
 	}
 
 	result.User = userLogin.User
+
+	return result
+}
+
+// Update updates user data.
+func (s *user) Update(param UserUpdateParam) UserUpdateResult {
+	result := UserUpdateResult{}
+
+	if !param.ID.IsValid() {
+		result.Error = ErrParamUserID
+		return result
+	}
+	if param.Username.Validate() != nil {
+		result.Error = ErrParamUsername
+		return result
+	}
+	if !param.FirstName.IsEmpty() && param.FirstName.Validate() != nil {
+		result.Error = ErrParamFirstName
+		return result
+	}
+	if !param.LastName.IsEmpty() && param.LastName.Validate() != nil {
+		result.Error = ErrParamLastName
+		return result
+	}
+	if !param.Gender.IsEmpty() && !param.Gender.IsValid() {
+		result.Error = ErrParamGender
+		return result
+	}
+
+	return result
+}
+
+// Delete deletes user data.
+func (s *user) Delete(param UserDeleteParam) UserDeleteResult {
+	result := UserDeleteResult{}
+
+	if !param.ID.IsValid() {
+		result.Error = ErrParamUserID
+		return result
+	}
+	if param.Password.Validate() != nil {
+		result.Error = ErrParamPassword
+		return result
+	}
 
 	return result
 }
