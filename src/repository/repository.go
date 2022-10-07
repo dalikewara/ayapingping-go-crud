@@ -11,6 +11,9 @@ type User interface {
 	// FindDetailByID finds user detail by id from database.
 	FindDetailByID(param UserFindDetailByIDParam) UserFindDetailByIDResult
 
+	// FindByIDAndPassword finds user data by id and password from database.
+	FindByIDAndPassword(param UserFindByIDAndPasswordParam) UserFindByIDAndPasswordResult
+
 	// FindByUsernameOrEmailAndPassword finds user data by username or email, and password from database.
 	FindByUsernameOrEmailAndPassword(param UserFindByUsernameOrEmailAndPasswordParam) UserFindByUsernameOrEmailAndPasswordResult
 
@@ -22,9 +25,8 @@ type User interface {
 	// It will update user and profile data using transaction.
 	UpdateByIDTx(param UserUpdateByIDTxParam) UserUpdateByIDTxResult
 
-	// DeleteByIDTx deletes user data by id from database.
-	// It will delete user and profile data using transaction.
-	DeleteByIDTx(param UserDeleteByIDTxParam) UserDeleteByIDTxResult
+	// DeleteByID deletes user data by id from database.
+	DeleteByID(param UserDeleteByIDParam) UserDeleteByIDResult
 }
 
 type Profile interface {

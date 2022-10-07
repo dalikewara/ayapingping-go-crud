@@ -22,6 +22,21 @@ func NewUser(param NewUserParam) User {
 // GetAllActive gets all active users.
 func (s *user) GetAllActive(param UserGetAllActiveParam) UserGetAllActiveResult {
 	result := UserGetAllActiveResult{}
+
+	activeUsers := s.userRepo.FindAllActive(repository.UserFindAllActiveParam{
+		Ctx: param.Ctx,
+	})
+	if activeUsers.Error != nil {
+		result.Error = activeUsers.Error
+		return result
+	}
+	if activeUsers.Users == nil {
+		result.Error = ErrServiceUserNotFound
+		return result
+	}
+
+	result.Users = activeUsers.Users
+
 	return result
 }
 
@@ -31,6 +46,19 @@ func (s *user) GetDetail(param UserGetDetailParam) UserGetDetailResult {
 
 	if !param.ID.IsValid() {
 		result.Error = ErrParamUserID
+		return result
+	}
+
+	userDetail := s.userRepo.FindDetailByID(repository.UserFindDetailByIDParam{
+		Ctx: param.Ctx,
+		ID:  param.ID,
+	})
+	if userDetail.Error != nil {
+		result.Error = userDetail.Error
+		return result
+	}
+	if userDetail.User == nil || !userDetail.User.ActiveStatus.IsActive() || !userDetail.User.DeletedAt.IsZero() {
+		result.Error = ErrServiceUserNotFound
 		return result
 	}
 
@@ -81,7 +109,7 @@ func (s *user) Register(param UserRegisterParam) UserRegisterResult {
 	})
 	if userInsert.Error != nil {
 		if userInsert.IsUserDuplicateKey {
-			result.Error = ErrServiceUsernameOrEmailAlreadyExists
+			result.Error = ErrServiceUserUsernameOrEmailAlreadyExists
 		} else if userInsert.IsProfileDuplicateKey {
 			result.Error = ErrServiceProfileAlreadyExists
 		} else {
@@ -118,8 +146,8 @@ func (s *user) Login(param UserLoginParam) UserLoginResult {
 		result.Error = userLogin.Error
 		return result
 	}
-	if userLogin.User == nil {
-		result.Error = ErrServiceUsernameOrPasswordWrong
+	if userLogin.User == nil || !userLogin.User.DeletedAt.IsZero() || !userLogin.User.ActiveStatus.IsActive() {
+		result.Error = ErrServiceUserUsernameOrPasswordWrong
 		return result
 	}
 
@@ -153,6 +181,23 @@ func (s *user) Update(param UserUpdateParam) UserUpdateResult {
 		return result
 	}
 
+	userUpdate := s.userRepo.UpdateByIDTx(repository.UserUpdateByIDTxParam{
+		Ctx:       param.Ctx,
+		ID:        param.ID,
+		Username:  param.Username,
+		FirstName: param.FirstName,
+		LastName:  param.LastName,
+		Gender:    param.Gender,
+	})
+	if userUpdate.Error != nil {
+		if userUpdate.IsUserDuplicateKey {
+			result.Error = ErrServiceUserUsernameAlreadyExists
+		} else {
+			result.Error = userUpdate.Error
+		}
+		return result
+	}
+
 	return result
 }
 
@@ -166,6 +211,29 @@ func (s *user) Delete(param UserDeleteParam) UserDeleteResult {
 	}
 	if param.Password.Validate() != nil {
 		result.Error = ErrParamPassword
+		return result
+	}
+
+	checkUser := s.userRepo.FindByIDAndPassword(repository.UserFindByIDAndPasswordParam{
+		Ctx:      param.Ctx,
+		ID:       param.ID,
+		Password: param.Password,
+	})
+	if checkUser.Error != nil {
+		result.Error = checkUser.Error
+		return result
+	}
+	if checkUser.User == nil || !checkUser.User.DeletedAt.IsZero() || !checkUser.User.ActiveStatus.IsActive() {
+		result.Error = ErrServiceUserPasswordWrong
+		return result
+	}
+
+	userDelete := s.userRepo.DeleteByID(repository.UserDeleteByIDParam{
+		Ctx: param.Ctx,
+		ID:  param.ID,
+	})
+	if userDelete.Error != nil {
+		result.Error = userDelete.Error
 		return result
 	}
 

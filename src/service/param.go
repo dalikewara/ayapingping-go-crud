@@ -12,7 +12,7 @@ type UserGetAllActiveParam struct {
 }
 
 type UserGetAllActiveResult struct {
-	User  []*entity.User
+	Users *entity.Users
 	Error entity.StdError
 }
 

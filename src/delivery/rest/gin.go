@@ -64,7 +64,6 @@ func (h *ginHandler) jsonNotOk(g *gin.Context, httpStatus int, code, message str
 // jsonCompose composes json response data and writes JSON payload into the response body.
 func (h *ginHandler) jsonCompose(g *gin.Context, dest, source interface{}) {
 	if err := rflgo.Compose(dest, source); err != nil {
-		fmt.Println(err)
 		h.jsonNotOk(g, ErrComposeResponseData.GetStatus(), ErrComposeResponseData.GetCode(), ErrComposeResponseData.GetMessage())
 		return
 	}

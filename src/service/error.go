@@ -40,9 +40,12 @@ var ErrParamGender = entity.NewStdError("PRM-GENDER-01", "invalid gender format"
 
 // Service: User
 
-var ErrServiceUsernameOrEmailAlreadyExists = entity.NewStdError("SVC-USER-01", "username or email already exists", http.StatusOK)
-var ErrServiceUsernameOrPasswordWrong = entity.NewStdError("SVC-USER-02", "username/email or password wrong", http.StatusOK)
+var ErrServiceUserUsernameOrEmailAlreadyExists = entity.NewStdError("SVC-USER-01", "username or email already exists", http.StatusConflict)
+var ErrServiceUserUsernameOrPasswordWrong = entity.NewStdError("SVC-USER-02", "username/email or password wrong", http.StatusNotFound)
+var ErrServiceUserNotFound = entity.NewStdError("SVC-USER-03", "user not found", http.StatusNotFound)
+var ErrServiceUserUsernameAlreadyExists = entity.NewStdError("SVC-USER-04", "username already exists", http.StatusConflict)
+var ErrServiceUserPasswordWrong = entity.NewStdError("SVC-USER-05", "password wrong", http.StatusNotFound)
 
 // Service: Profile
 
-var ErrServiceProfileAlreadyExists = entity.NewStdError("SVC-PROFILE-01", "profile already exists", http.StatusOK)
+var ErrServiceProfileAlreadyExists = entity.NewStdError("SVC-PROFILE-01", "profile already exists", http.StatusConflict)

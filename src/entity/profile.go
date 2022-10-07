@@ -9,7 +9,6 @@ type Profile struct {
 	Gender    Gender    `json:"gender"`
 	CreatedAt Time      `json:"created_at"`
 	UpdatedAt Time      `json:"updated_at"`
-	DeletedAt Time      `json:"deleted_at"`
 }
 
 type Profiles []*Profile

@@ -26,5 +26,15 @@ func (s *profile) UpdateImage(param ProfileUpdateImageParam) ProfileUpdateImageR
 		return result
 	}
 
+	profileUpdate := s.profileRepo.UpdateImageByUserID(repository.ProfileUpdateImageByUserIDParam{
+		Ctx:    param.Ctx,
+		UserID: param.UserID,
+		Image:  param.Image,
+	})
+	if profileUpdate.Error != nil {
+		result.Error = profileUpdate.Error
+		return result
+	}
+
 	return result
 }

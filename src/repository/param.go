@@ -12,7 +12,7 @@ type UserFindAllActiveParam struct {
 }
 
 type UserFindAllActiveResult struct {
-	User  []*entity.User
+	Users *entity.Users
 	Error entity.StdError
 }
 
@@ -23,6 +23,17 @@ type UserFindDetailByIDParam struct {
 
 type UserFindDetailByIDResult struct {
 	User  *entity.UserWithProfile
+	Error entity.StdError
+}
+
+type UserFindByIDAndPasswordParam struct {
+	Ctx      context.Context
+	ID       entity.ID
+	Password entity.Password
+}
+
+type UserFindByIDAndPasswordResult struct {
+	User  *entity.User
 	Error entity.StdError
 }
 
@@ -65,16 +76,16 @@ type UserUpdateByIDTxParam struct {
 }
 
 type UserUpdateByIDTxResult struct {
-	Error entity.StdError
+	Error              entity.StdError
+	IsUserDuplicateKey bool
 }
 
-type UserDeleteByIDTxParam struct {
-	Ctx      context.Context
-	ID       entity.ID
-	Password entity.Password
+type UserDeleteByIDParam struct {
+	Ctx context.Context
+	ID  entity.ID
 }
 
-type UserDeleteByIDTxResult struct {
+type UserDeleteByIDResult struct {
 	Error entity.StdError
 }
 
