@@ -44,7 +44,6 @@ var ErrServiceUserUsernameOrEmailAlreadyExists = entity.NewStdError("SVC-USER-01
 var ErrServiceUserUsernameOrPasswordWrong = entity.NewStdError("SVC-USER-02", "username/email or password wrong", http.StatusNotFound)
 var ErrServiceUserNotFound = entity.NewStdError("SVC-USER-03", "user not found", http.StatusNotFound)
 var ErrServiceUserUsernameAlreadyExists = entity.NewStdError("SVC-USER-04", "username already exists", http.StatusConflict)
-var ErrServiceUserPasswordWrong = entity.NewStdError("SVC-USER-05", "password wrong", http.StatusNotFound)
 
 // Service: Profile
 

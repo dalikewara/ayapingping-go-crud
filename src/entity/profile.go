@@ -12,3 +12,9 @@ type Profile struct {
 }
 
 type Profiles []*Profile
+
+// For client
+
+type ProfileForClient Profile
+
+type ProfilesForClient []*ProfileForClient

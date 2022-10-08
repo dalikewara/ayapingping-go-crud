@@ -91,7 +91,9 @@ var PostgreSQLUserUpdateByIDQuery = `
 	SET
 	    username = $1
 	WHERE
-	    id = $2
+	    id = $2 AND
+	    active_status = 1 AND
+	    deleted_at IS NOT NULL
 `
 
 var PostgreSQLUserDeleteByIDQuery = `
@@ -101,7 +103,9 @@ var PostgreSQLUserDeleteByIDQuery = `
 	    active_status = 0,
 	    deleted_at = CURRENT_TIMESTAMP
 	WHERE
-	    id = $1
+	    id = $1 AND
+	    active_status = 1 AND
+	    deleted_at IS NOT NULL
 `
 
 // Profile

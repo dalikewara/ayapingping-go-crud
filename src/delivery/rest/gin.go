@@ -33,8 +33,16 @@ func NewGin(param NewGinParam) REST {
 
 // RegisterRoutes registers gin-gonic REST routes.
 func (h *ginHandler) RegisterRoutes() {
+	h.client.GET(RoutePing, h.Ping)
+
+	h.client.GET(RouteUserGetAllActive, h.UserGetAllActive)
+	h.client.GET(RouteUserGetDetail, h.UserGetDetail)
 	h.client.POST(RouteUserRegister, h.UserRegister)
 	h.client.POST(RouteUserLogin, h.UserLogin)
+	h.client.POST(RouteUserUpdate, h.UserUpdate)
+	h.client.POST(RouteUserDelete, h.UserDelete)
+
+	h.client.POST(RouteProfileUpdateImage, h.ProfileUpdateImage)
 }
 
 // Serve serves gin-gonic REST application.
@@ -68,6 +76,14 @@ func (h *ginHandler) jsonCompose(g *gin.Context, dest, source interface{}) {
 		return
 	}
 	h.jsonOk(g, dest)
+}
+
+// jsonComposeWithoutWrite composes json response data without writes the JSON payload into the response body.
+func (h *ginHandler) jsonComposeWithoutWrite(dest, source interface{}) entity.StdError {
+	if err := rflgo.Compose(dest, source); err != nil {
+		return ErrComposeResponseData
+	}
+	return nil
 }
 
 // parseJSONRequest parses JSON request into `dest`.

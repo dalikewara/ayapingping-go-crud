@@ -224,7 +224,7 @@ func (s *user) Delete(param UserDeleteParam) UserDeleteResult {
 		return result
 	}
 	if checkUser.User == nil || !checkUser.User.DeletedAt.IsZero() || !checkUser.User.ActiveStatus.IsActive() {
-		result.Error = ErrServiceUserPasswordWrong
+		result.Error = ErrServiceUserNotFound
 		return result
 	}
 

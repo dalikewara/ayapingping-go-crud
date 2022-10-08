@@ -19,3 +19,23 @@ type UserWithProfile struct {
 type Users []*User
 
 type UsersWithProfile []*UserWithProfile
+
+// For client
+
+type UserForClient struct {
+	ID           ID           `json:"id"`
+	Username     Username     `json:"username"`
+	Email        Email        `json:"email"`
+	ActiveStatus ActiveStatus `json:"active_status"`
+	CreatedAt    Time         `json:"created_at"`
+	UpdatedAt    Time         `json:"updated_at"`
+}
+
+type UserWithProfileForClient struct {
+	UserForClient
+	Profile *ProfileForClient `json:"profile"`
+}
+
+type UsersForClient []*UserForClient
+
+type UsersWithProfileForClient []*UserWithProfileForClient

@@ -3,14 +3,12 @@ package repository
 import (
 	"github.com/dalikewara/ayapingping-go-crud/src/entity"
 	"github.com/dalikewara/pgxpoolgo"
-	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
 )
 
 type userPostgreSQL struct {
 	timezoneName   string
 	timezoneOffset int
-	typeTimestamp  pgtype.Timestamp
 	pool           pgxpoolgo.Pool
 }
 
@@ -25,7 +23,6 @@ func NewUserPostgreSQL(param NewUserPostgreSQLParam) User {
 	return &userPostgreSQL{
 		timezoneName:   param.TimezoneName,
 		timezoneOffset: param.TimezoneOffset,
-		typeTimestamp:  pgtype.Timestamp{},
 		pool:           param.Pool,
 	}
 }
@@ -44,11 +41,14 @@ func (r *userPostgreSQL) FindAllActive(param UserFindAllActiveParam) UserFindAll
 		return result
 	}
 	defer rows.Close()
+
+	var exists bool
+
 	for rows.Next() {
 		user := &entity.User{}
-		createdAt := r.typeTimestamp
-		updatedAt := r.typeTimestamp
-		deletedAt := r.typeTimestamp
+		createdAt := user.CreatedAt.GetPostgreSQLType()
+		updatedAt := user.UpdatedAt.GetPostgreSQLType()
+		deletedAt := user.DeletedAt.GetPostgreSQLType()
 
 		if err = rows.Scan(
 			&user.ID,
@@ -63,23 +63,26 @@ func (r *userPostgreSQL) FindAllActive(param UserFindAllActiveParam) UserFindAll
 			return result
 		}
 
-		user.CreatedAt.SetFromTime(createdAt.Time, entity.Timezone{
+		user.CreatedAt.SetFromTime(user.CreatedAt.PrimitiveFromPostgreSQLType(createdAt), entity.Timezone{
 			Name:   r.timezoneName,
 			Offset: r.timezoneOffset,
 		})
-		user.UpdatedAt.SetFromTime(updatedAt.Time, entity.Timezone{
+		user.UpdatedAt.SetFromTime(user.UpdatedAt.PrimitiveFromPostgreSQLType(updatedAt), entity.Timezone{
 			Name:   r.timezoneName,
 			Offset: r.timezoneOffset,
 		})
-		user.DeletedAt.SetFromTime(deletedAt.Time, entity.Timezone{
+		user.DeletedAt.SetFromTime(user.DeletedAt.PrimitiveFromPostgreSQLType(deletedAt), entity.Timezone{
 			Name:   r.timezoneName,
 			Offset: r.timezoneOffset,
 		})
 
 		users = append(users, user)
+		exists = true
 	}
 
-	result.Users = &users
+	if exists {
+		result.Users = &users
+	}
 
 	return result
 }
@@ -89,11 +92,12 @@ func (r *userPostgreSQL) FindDetailByID(param UserFindDetailByIDParam) UserFindD
 	result := UserFindDetailByIDResult{}
 	user := &entity.UserWithProfile{}
 	profile := &entity.Profile{}
-	userCreatedAt := r.typeTimestamp
-	userUpdatedAt := r.typeTimestamp
-	userDeletedAt := r.typeTimestamp
-	profileCreatedAt := r.typeTimestamp
-	profileUpdatedAt := r.typeTimestamp
+	userCreatedAt := user.CreatedAt.GetPostgreSQLType()
+	userUpdatedAt := user.UpdatedAt.GetPostgreSQLType()
+	userDeletedAt := user.DeletedAt.GetPostgreSQLType()
+	profileImage := profile.Image.GetPostgreSQLType()
+	profileCreatedAt := profile.CreatedAt.GetPostgreSQLType()
+	profileUpdatedAt := profile.UpdatedAt.GetPostgreSQLType()
 
 	if err := r.pool.QueryRow(
 		param.Ctx,
@@ -110,7 +114,7 @@ func (r *userPostgreSQL) FindDetailByID(param UserFindDetailByIDParam) UserFindD
 		&profile.ID,
 		&profile.FirstName,
 		&profile.LastName,
-		&profile.Image,
+		&profileImage,
 		&profile.Gender,
 		&profileCreatedAt,
 		&profileUpdatedAt,
@@ -122,23 +126,24 @@ func (r *userPostgreSQL) FindDetailByID(param UserFindDetailByIDParam) UserFindD
 		return result
 	}
 
-	user.CreatedAt.SetFromTime(userCreatedAt.Time, entity.Timezone{
+	user.CreatedAt.SetFromTime(user.CreatedAt.PrimitiveFromPostgreSQLType(userCreatedAt), entity.Timezone{
 		Name:   r.timezoneName,
 		Offset: r.timezoneOffset,
 	})
-	user.UpdatedAt.SetFromTime(userUpdatedAt.Time, entity.Timezone{
+	user.UpdatedAt.SetFromTime(user.UpdatedAt.PrimitiveFromPostgreSQLType(userUpdatedAt), entity.Timezone{
 		Name:   r.timezoneName,
 		Offset: r.timezoneOffset,
 	})
-	user.DeletedAt.SetFromTime(userDeletedAt.Time, entity.Timezone{
+	user.DeletedAt.SetFromTime(user.DeletedAt.PrimitiveFromPostgreSQLType(userDeletedAt), entity.Timezone{
 		Name:   r.timezoneName,
 		Offset: r.timezoneOffset,
 	})
-	profile.CreatedAt.SetFromTime(profileCreatedAt.Time, entity.Timezone{
+	profile.Image.Set(profile.Image.PrimitiveFromPostgreSQLType(profileImage))
+	profile.CreatedAt.SetFromTime(profile.CreatedAt.PrimitiveFromPostgreSQLType(profileCreatedAt), entity.Timezone{
 		Name:   r.timezoneName,
 		Offset: r.timezoneOffset,
 	})
-	profile.UpdatedAt.SetFromTime(profileUpdatedAt.Time, entity.Timezone{
+	profile.UpdatedAt.SetFromTime(profile.UpdatedAt.PrimitiveFromPostgreSQLType(profileUpdatedAt), entity.Timezone{
 		Name:   r.timezoneName,
 		Offset: r.timezoneOffset,
 	})
@@ -153,9 +158,9 @@ func (r *userPostgreSQL) FindDetailByID(param UserFindDetailByIDParam) UserFindD
 func (r *userPostgreSQL) FindByIDAndPassword(param UserFindByIDAndPasswordParam) UserFindByIDAndPasswordResult {
 	result := UserFindByIDAndPasswordResult{}
 	user := &entity.User{}
-	createdAt := r.typeTimestamp
-	updatedAt := r.typeTimestamp
-	deletedAt := r.typeTimestamp
+	createdAt := user.CreatedAt.GetPostgreSQLType()
+	updatedAt := user.UpdatedAt.GetPostgreSQLType()
+	deletedAt := user.DeletedAt.GetPostgreSQLType()
 
 	if err := r.pool.QueryRow(
 		param.Ctx,
@@ -178,15 +183,15 @@ func (r *userPostgreSQL) FindByIDAndPassword(param UserFindByIDAndPasswordParam)
 		return result
 	}
 
-	user.CreatedAt.SetFromTime(createdAt.Time, entity.Timezone{
+	user.CreatedAt.SetFromTime(user.CreatedAt.PrimitiveFromPostgreSQLType(createdAt), entity.Timezone{
 		Name:   r.timezoneName,
 		Offset: r.timezoneOffset,
 	})
-	user.UpdatedAt.SetFromTime(updatedAt.Time, entity.Timezone{
+	user.UpdatedAt.SetFromTime(user.UpdatedAt.PrimitiveFromPostgreSQLType(updatedAt), entity.Timezone{
 		Name:   r.timezoneName,
 		Offset: r.timezoneOffset,
 	})
-	user.DeletedAt.SetFromTime(deletedAt.Time, entity.Timezone{
+	user.DeletedAt.SetFromTime(user.DeletedAt.PrimitiveFromPostgreSQLType(deletedAt), entity.Timezone{
 		Name:   r.timezoneName,
 		Offset: r.timezoneOffset,
 	})
@@ -200,9 +205,9 @@ func (r *userPostgreSQL) FindByIDAndPassword(param UserFindByIDAndPasswordParam)
 func (r *userPostgreSQL) FindByUsernameOrEmailAndPassword(param UserFindByUsernameOrEmailAndPasswordParam) UserFindByUsernameOrEmailAndPasswordResult {
 	result := UserFindByUsernameOrEmailAndPasswordResult{}
 	user := &entity.User{}
-	createdAt := r.typeTimestamp
-	updatedAt := r.typeTimestamp
-	deletedAt := r.typeTimestamp
+	createdAt := user.CreatedAt.GetPostgreSQLType()
+	updatedAt := user.UpdatedAt.GetPostgreSQLType()
+	deletedAt := user.DeletedAt.GetPostgreSQLType()
 
 	if err := r.pool.QueryRow(
 		param.Ctx,
@@ -226,15 +231,15 @@ func (r *userPostgreSQL) FindByUsernameOrEmailAndPassword(param UserFindByUserna
 		return result
 	}
 
-	user.CreatedAt.SetFromTime(createdAt.Time, entity.Timezone{
+	user.CreatedAt.SetFromTime(user.CreatedAt.PrimitiveFromPostgreSQLType(createdAt), entity.Timezone{
 		Name:   r.timezoneName,
 		Offset: r.timezoneOffset,
 	})
-	user.UpdatedAt.SetFromTime(updatedAt.Time, entity.Timezone{
+	user.UpdatedAt.SetFromTime(user.UpdatedAt.PrimitiveFromPostgreSQLType(updatedAt), entity.Timezone{
 		Name:   r.timezoneName,
 		Offset: r.timezoneOffset,
 	})
-	user.DeletedAt.SetFromTime(deletedAt.Time, entity.Timezone{
+	user.DeletedAt.SetFromTime(user.DeletedAt.PrimitiveFromPostgreSQLType(deletedAt), entity.Timezone{
 		Name:   r.timezoneName,
 		Offset: r.timezoneOffset,
 	})
@@ -342,6 +347,10 @@ func (r *userPostgreSQL) UpdateByIDTx(param UserUpdateByIDTxParam) UserUpdateByI
 		return result
 	}
 	if reply.RowsAffected() < 1 {
+		if errR := tx.Rollback(param.Ctx); errR != nil {
+			result.Error = ErrDatabaseUserUpdate
+			return result
+		}
 		result.Error = ErrDatabaseUserUpdateNoAffected
 		return result
 	}
@@ -363,6 +372,10 @@ func (r *userPostgreSQL) UpdateByIDTx(param UserUpdateByIDTxParam) UserUpdateByI
 		return result
 	}
 	if reply.RowsAffected() < 1 {
+		if errR := tx.Rollback(param.Ctx); errR != nil {
+			result.Error = ErrDatabaseUserUpdate
+			return result
+		}
 		result.Error = ErrDatabaseProfileUpdateNoAffected
 		return result
 	}
